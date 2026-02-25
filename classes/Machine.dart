@@ -4,9 +4,9 @@ class Machine {
   int _water = 0;
   int _cash = 0;
 
-  int _coffeeBeansAmount = 50;
-  int _milkAmount = 0;
-  int _waterAmount = 100;
+  int COFFEE_BEANS_AMOUNT = 50;
+  int MILK_AMOUNT = 0;
+  int WATER_AMOUNT = 100;
 
   Machine(this._coffeeBeans, this._milk, this._water, this._cash);
 
@@ -39,9 +39,9 @@ class Machine {
   }
 
   bool isAvailableResources() {
-    return (_coffeeBeans >= _coffeeBeansAmount) &&
-        (_water >= _waterAmount) &&
-        (_milk >= _milkAmount);
+    return (_coffeeBeans >= COFFEE_BEANS_AMOUNT) &&
+        (_water >= WATER_AMOUNT) &&
+        (_milk >= MILK_AMOUNT);
   }
 
   void _subtractResources() {
