@@ -4,6 +4,10 @@ class Machine {
   int _water = 0;
   int _cash = 0;
 
+  int _coffeeBeansAmount = 50;
+  int _milkAmount = 0;
+  int _waterAmount = 100;
+
   Machine(this._coffeeBeans, this._milk, this._water, this._cash);
 
   int get coffeeBeans => _coffeeBeans;
@@ -35,7 +39,9 @@ class Machine {
   }
 
   bool isAvailableResources() {
-    return (_coffeeBeans >= 50) && (_water >= 100);
+    return (_coffeeBeans >= _coffeeBeansAmount) &&
+        (_water >= _waterAmount) &&
+        (_milk >= _milkAmount);
   }
 
   void _subtractResources() {
