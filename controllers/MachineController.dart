@@ -8,7 +8,7 @@ import '../services/CoffeeMaker.dart';
 class MachineController {
   Resources _resources;
   ConsoleView _view;
-  CoffeeMaker _coffeeMaker = CoffeeMaker();
+  CoffeeMaker _coffeeMaker = CoffeeMaker.create();
 
   MachineController(this._resources, this._view);
 
