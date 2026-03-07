@@ -12,4 +12,16 @@ class CoffeeMaker {
     await Future.delayed(Duration(seconds: 5));
     print('Кофе заварен');
   }
+
+  Future<void> frothMilk() async {
+    print('Взбивание молока...');
+    await Future.delayed(Duration(seconds: 5));
+    print('Молоко взбито');
+  }
+
+  Future<void> mixCoffeeAndMilk() async {
+    print('Смешивание кофе с молоком...');
+    await Future.delayed(Duration(seconds: 3));
+    print('Кофе смешан с молоком');
+  }
 }

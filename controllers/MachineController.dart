@@ -65,8 +65,17 @@ class MachineController {
       _view.showMessage('Начинаем приготовление кофе...');
 
       await _coffeeMaker.heatWater();
-      await _coffeeMaker.brewCoffee();
 
+      if (type == CoffeeType.espresso || type == CoffeeType.americano) {
+        await _coffeeMaker.brewCoffee();
+      } else {
+        await Future.wait([
+          _coffeeMaker.brewCoffee(),
+          _coffeeMaker.frothMilk(),
+        ]);
+
+        await _coffeeMaker.mixCoffeeAndMilk();
+      }
       _view.showMessage('Ваш кофе готов!');
     } else {
       _view.showError('Недостаточно ресурсов');
