@@ -3,14 +3,16 @@ import '../models/ICoffee.dart';
 import '../models/Coffee.dart';
 import '../models/Enums.dart';
 import '../views/ConsoleView.dart';
+import '../services/CoffeeMaker.dart';
 
 class MachineController {
   Resources _resources;
   ConsoleView _view;
+  CoffeeMaker _coffeeMaker = CoffeeMaker();
 
   MachineController(this._resources, this._view);
 
-  void run() {
+  void run() async {
     bool isWorking = true;
 
     while (isWorking) {
@@ -19,16 +21,16 @@ class MachineController {
 
       switch (input) {
         case '1':
-          makeCoffee(CoffeeType.espresso);
+          await makeCoffee(CoffeeType.espresso);
           break;
         case '2':
-          makeCoffee(CoffeeType.americano);
+          await makeCoffee(CoffeeType.americano);
           break;
         case '3':
-          makeCoffee(CoffeeType.cappuccino);
+          await makeCoffee(CoffeeType.cappuccino);
           break;
         case '4':
-          makeCoffee(CoffeeType.latte);
+          await makeCoffee(CoffeeType.latte);
           break;
         case '5':
           addResources();
@@ -46,7 +48,7 @@ class MachineController {
     }
   }
 
-  void makeCoffee(CoffeeType type) {
+  Future<void> makeCoffee(CoffeeType type) async {
     ICoffee? coffee = createCoffee(type);
 
     if (coffee == null) {
@@ -59,6 +61,11 @@ class MachineController {
       _resources.milk -= coffee.milk();
       _resources.water -= coffee.water();
       _resources.cash += coffee.cash();
+
+      _view.showMessage('Начинаем приготовление кофе...');
+
+      await _coffeeMaker.heatWater();
+      await _coffeeMaker.brewCoffee();
 
       _view.showMessage('Ваш кофе готов!');
     } else {
