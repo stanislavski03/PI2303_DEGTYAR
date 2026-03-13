@@ -85,7 +85,7 @@ class MachineController {
         );
       }
 
-      _notifications.showSuccess('${type.toString().toUpperCase()} готов!');
+      _notifications.showSuccess('${type.displayName} готов!');
       return true;
     } catch (e) {
       _notifications.showError('Ошибка приготовления');
