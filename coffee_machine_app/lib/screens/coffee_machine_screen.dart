@@ -3,6 +3,7 @@ import '../app_state.dart';
 import '../models/Enums.dart';
 import '../models/ICoffee.dart';
 import '../services/NotificationService.dart';
+import '../widgets/resource_display.dart';
 
 class CoffeeMachineScreen extends StatefulWidget {
   const CoffeeMachineScreen({super.key});
@@ -96,17 +97,10 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  color: Colors.grey[300],
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text('Кофе: ${_appState.resources.coffeeBeans} г'),
-                      Text('Молоко: ${_appState.resources.milk} мл'),
-                      Text('Вода: ${_appState.resources.water} мл'),
-                    ],
-                  ),
+                ResourceDisplay(
+                  coffeeBeans: _appState.resources.coffeeBeans,
+                  milk: _appState.resources.milk,
+                  water: _appState.resources.water,
                 ),
 
                 const SizedBox(height: 20),
