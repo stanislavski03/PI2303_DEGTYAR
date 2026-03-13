@@ -1,30 +1,81 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:coffee_machine_app/models/Resources.dart';
+import 'package:coffee_machine_app/models/Enums.dart';
 
-// import 'package:flutter/material.dart';
-// import 'package:flutter_test/flutter_test.dart';
+class TestEspresso {
+  int coffeeBeans() => 50;
+  int milk() => 0;
+  int water() => 100;
+  int cash() => 150;
+}
 
-// import 'package:coffee_machine_app/main.dart';
+class TestMachineController {
+  Resources resources;
 
-// void main() {
-//   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-//     // Build our app and trigger a frame.
-//     await tester.pumpWidget(const MyApp());
+  TestMachineController(this.resources);
 
-//     // Verify that our counter starts at 0.
-//     expect(find.text('0'), findsOneWidget);
-//     expect(find.text('1'), findsNothing);
+  Future<bool> makeEspresso() async {
+    TestEspresso coffee = TestEspresso();
 
-//     // Tap the '+' icon and trigger a frame.
-//     await tester.tap(find.byIcon(Icons.add));
-//     await tester.pump();
+    if (resources.coffeeBeans < coffee.coffeeBeans()) return false;
+    if (resources.water < coffee.water()) return false;
+    if (resources.cash < coffee.cash()) return false;
 
-//     // Verify that our counter has incremented.
-//     expect(find.text('0'), findsNothing);
-//     expect(find.text('1'), findsOneWidget);
-//   });
-// }
+    resources.coffeeBeans -= coffee.coffeeBeans();
+    resources.water -= coffee.water();
+    resources.cash -= coffee.cash();
+
+    return true;
+  }
+}
+
+class TestApp extends StatelessWidget {
+  const TestApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: ElevatedButton(onPressed: null, child: Text('ПУСК')),
+        ),
+      ),
+    );
+  }
+}
+
+void main() {
+  testWidgets('Кнопка ПУСК есть на форме', (WidgetTester tester) async {
+    await tester.pumpWidget(const TestApp());
+
+    expect(find.text('ПУСК'), findsOneWidget);
+  });
+
+  test('Ресурсы инициализируются с начальными значениями', () {
+    Resources resources = Resources(100, 200, 300, 500);
+
+    expect(resources.coffeeBeans, 100);
+    expect(resources.milk, 200);
+    expect(resources.water, 300);
+    expect(resources.cash, 500);
+  });
+
+  test(
+    'При покупке эспрессо ресурсы уменьшаются, деньги уменьшаются',
+    () async {
+      Resources resources = Resources(100, 200, 300, 500);
+      TestMachineController controller = TestMachineController(resources);
+
+      int startCoffee = resources.coffeeBeans;
+      int startWater = resources.water;
+      int startCash = resources.cash;
+
+      await controller.makeEspresso();
+
+      expect(resources.coffeeBeans, startCoffee - 50);
+      expect(resources.water, startWater - 100);
+      expect(resources.cash, startCash - 150);
+    },
+  );
+}
