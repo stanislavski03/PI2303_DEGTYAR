@@ -49,7 +49,10 @@ class _MainScreenState extends State<MainScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [CoffeeMachineScreen(), ResourcesScreen()],
+        children: [
+          CoffeeMachineScreen(key: UniqueKey()),
+          ResourcesScreen(key: UniqueKey()),
+        ],
       ),
     );
   }

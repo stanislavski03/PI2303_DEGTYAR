@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../app_state.dart';
+import '../models/Enums.dart';
+import '../models/ICoffee.dart';
 
 class CoffeeMachineScreen extends StatefulWidget {
   const CoffeeMachineScreen({super.key});
@@ -8,14 +11,94 @@ class CoffeeMachineScreen extends StatefulWidget {
 }
 
 class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
-  int coffeeBeans = 100;
-  int milk = 200;
-  int water = 300;
-  int cash = 500;
-
-  int selectedCoffee = 0;
+  late AppState _appState;
+  int selectedCoffee =
+      0; // 0 - эспрессо, 1 - американо, 2 - капучино, 3 - латте
+  bool isMakingCoffee = false;
 
   final TextEditingController _moneyController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _appState = AppState();
+  }
+
+  CoffeeType _getCoffeeTypeFromIndex(int index) {
+    switch (index) {
+      case 0:
+        return CoffeeType.espresso;
+      case 1:
+        return CoffeeType.americano;
+      case 2:
+        return CoffeeType.cappuccino;
+      case 3:
+        return CoffeeType.latte;
+      default:
+        return CoffeeType.espresso;
+    }
+  }
+
+  String _getCoffeeName(int index) {
+    switch (index) {
+      case 0:
+        return 'Эспрессо';
+      case 1:
+        return 'Американо';
+      case 2:
+        return 'Капучино';
+      case 3:
+        return 'Латте';
+      default:
+        return 'Кофе';
+    }
+  }
+
+  int _getCoffeePrice(int index) {
+    ICoffee? coffee = _appState.controller.createCoffee(
+      _getCoffeeTypeFromIndex(index),
+    );
+    return coffee?.cash() ?? 0;
+  }
+
+  Future<void> _makeCoffee() async {
+    if (isMakingCoffee) return;
+
+    setState(() {
+      isMakingCoffee = true;
+    });
+
+    CoffeeType type = _getCoffeeTypeFromIndex(selectedCoffee);
+
+    ICoffee? coffee = _appState.controller.createCoffee(type);
+    if (coffee != null && _appState.resources.cash < coffee.cash()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Недостаточно денег! Нужно ${coffee.cash()} руб'),
+        ),
+      );
+      setState(() {
+        isMakingCoffee = false;
+      });
+      return;
+    }
+
+    bool success = await _appState.controller.makeCoffee(type, (message) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(message)));
+    });
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('${_getCoffeeName(selectedCoffee)} готов!')),
+      );
+    }
+
+    setState(() {
+      isMakingCoffee = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,9 +117,9 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Text('Кофе: $coffeeBeans г'),
-                      Text('Молоко: $milk мл'),
-                      Text('Вода: $water мл'),
+                      Text('Кофе: ${_appState.resources.coffeeBeans} г'),
+                      Text('Молоко: ${_appState.resources.milk} мл'),
+                      Text('Вода: ${_appState.resources.water} мл'),
                     ],
                   ),
                 ),
@@ -55,32 +138,32 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   color: Colors.grey[200],
-                  child: Center(child: Text('Ваши деньги: $cash руб')),
+                  child: Center(
+                    child: Text('Ваши деньги: ${_appState.resources.cash} руб'),
+                  ),
                 ),
 
                 const SizedBox(height: 20),
 
                 const Text('Выберите кофе:'),
 
-                _buildCoffeeOption(0, 'Эспрессо - 150 руб'),
-                _buildCoffeeOption(1, 'Американо - 180 руб'),
-                _buildCoffeeOption(2, 'Капучино - 200 руб'),
-                _buildCoffeeOption(3, 'Латте - 250 руб'),
+                _buildCoffeeOption(0, 'Эспрессо - ${_getCoffeePrice(0)} руб'),
+                _buildCoffeeOption(1, 'Американо - ${_getCoffeePrice(1)} руб'),
+                _buildCoffeeOption(2, 'Капучино - ${_getCoffeePrice(2)} руб'),
+                _buildCoffeeOption(3, 'Латте - ${_getCoffeePrice(3)} руб'),
 
                 const SizedBox(height: 20),
 
                 Center(
                   child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            'Готовим ${_getCoffeeName(selectedCoffee)}...',
-                          ),
-                        ),
-                      );
-                    },
-                    child: const Text('ПУСК'),
+                    onPressed: isMakingCoffee ? null : _makeCoffee,
+                    child: isMakingCoffee
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Text('ПУСК'),
                   ),
                 ),
 
@@ -105,8 +188,9 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
                           onPressed: () {
                             if (_moneyController.text.isNotEmpty) {
                               setState(() {
-                                cash +=
+                                int amount =
                                     int.tryParse(_moneyController.text) ?? 0;
+                                _appState.resources.cash += amount;
                               });
                               _moneyController.clear();
                               FocusManager.instance.primaryFocus?.unfocus();
@@ -122,7 +206,7 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
                         ElevatedButton(
                           onPressed: () {
                             setState(() {
-                              cash = 0;
+                              _appState.resources.cash = 0;
                             });
                             FocusManager.instance.primaryFocus?.unfocus();
                           },
@@ -152,29 +236,22 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
         Radio<int>(
           value: index,
           groupValue: selectedCoffee,
-          onChanged: (value) {
-            setState(() {
-              selectedCoffee = value!;
-            });
-          },
+          onChanged: isMakingCoffee
+              ? null
+              : (value) {
+                  setState(() {
+                    selectedCoffee = value!;
+                  });
+                },
         ),
         Text(title),
       ],
     );
   }
 
-  String _getCoffeeName(int index) {
-    switch (index) {
-      case 0:
-        return 'Эспрессо';
-      case 1:
-        return 'Американо';
-      case 2:
-        return 'Капучино';
-      case 3:
-        return 'Латте';
-      default:
-        return 'Кофе';
-    }
+  @override
+  void dispose() {
+    _moneyController.dispose();
+    super.dispose();
   }
 }

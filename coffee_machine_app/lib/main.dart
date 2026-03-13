@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'screens/main_screen.dart';
+import 'app_state.dart';
 
 void main() {
+  final appState = AppState();
+  appState.initialize();
+
   runApp(const CoffeeMachineApp());
 }
 

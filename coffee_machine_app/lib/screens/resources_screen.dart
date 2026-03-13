@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../app_state.dart';
 
 class ResourcesScreen extends StatefulWidget {
   const ResourcesScreen({super.key});
@@ -8,15 +9,47 @@ class ResourcesScreen extends StatefulWidget {
 }
 
 class _ResourcesScreenState extends State<ResourcesScreen> {
-  int coffeeBeans = 100;
-  int milk = 200;
-  int water = 300;
-  int cash = 500;
+  late AppState _appState;
 
   final TextEditingController _coffeeController = TextEditingController();
   final TextEditingController _milkController = TextEditingController();
   final TextEditingController _waterController = TextEditingController();
   final TextEditingController _cashController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _appState = AppState();
+  }
+
+  void _addResources() {
+    setState(() {
+      _appState.resources.coffeeBeans +=
+          int.tryParse(_coffeeController.text) ?? 0;
+      _appState.resources.milk += int.tryParse(_milkController.text) ?? 0;
+      _appState.resources.water += int.tryParse(_waterController.text) ?? 0;
+      _appState.resources.cash += int.tryParse(_cashController.text) ?? 0;
+    });
+
+    _coffeeController.clear();
+    _milkController.clear();
+    _waterController.clear();
+    _cashController.clear();
+
+    FocusManager.instance.primaryFocus?.unfocus();
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Ресурсы добавлены')));
+  }
+
+  void _clearInputs() {
+    _coffeeController.clear();
+    _milkController.clear();
+    _waterController.clear();
+    _cashController.clear();
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,10 +71,16 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
 
                 const SizedBox(height: 20),
 
-                _buildResourceLine('Кофе:', '$coffeeBeans г'),
-                _buildResourceLine('Молоко:', '$milk мл'),
-                _buildResourceLine('Вода:', '$water мл'),
-                _buildResourceLine('Деньги:', '$cash руб'),
+                _buildResourceLine(
+                  'Кофе:',
+                  '${_appState.resources.coffeeBeans} г',
+                ),
+                _buildResourceLine('Молоко:', '${_appState.resources.milk} мл'),
+                _buildResourceLine('Вода:', '${_appState.resources.water} мл'),
+                _buildResourceLine(
+                  'Деньги:',
+                  '${_appState.resources.cash} руб',
+                ),
 
                 const SizedBox(height: 30),
 
@@ -62,20 +101,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            coffeeBeans +=
-                                int.tryParse(_coffeeController.text) ?? 0;
-                            milk += int.tryParse(_milkController.text) ?? 0;
-                            water += int.tryParse(_waterController.text) ?? 0;
-                            cash += int.tryParse(_cashController.text) ?? 0;
-                          });
-                          _coffeeController.clear();
-                          _milkController.clear();
-                          _waterController.clear();
-                          _cashController.clear();
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
+                        onPressed: _addResources,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           foregroundColor: Colors.white,
@@ -86,13 +112,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          _coffeeController.clear();
-                          _milkController.clear();
-                          _waterController.clear();
-                          _cashController.clear();
-                          FocusManager.instance.primaryFocus?.unfocus();
-                        },
+                        onPressed: _clearInputs,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
