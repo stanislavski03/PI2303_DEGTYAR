@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../app_state.dart';
+import '../services/NotificationService.dart';
 
 class ResourcesScreen extends StatefulWidget {
   const ResourcesScreen({super.key});
@@ -10,6 +11,7 @@ class ResourcesScreen extends StatefulWidget {
 
 class _ResourcesScreenState extends State<ResourcesScreen> {
   late AppState _appState;
+  late NotificationService _notifications;
 
   final TextEditingController _coffeeController = TextEditingController();
   final TextEditingController _milkController = TextEditingController();
@@ -20,15 +22,28 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
   void initState() {
     super.initState();
     _appState = AppState();
+    _notifications = NotificationService();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifications.setContext(context);
+    });
   }
 
   void _addResources() {
+    int coffee = int.tryParse(_coffeeController.text) ?? 0;
+    int milk = int.tryParse(_milkController.text) ?? 0;
+    int water = int.tryParse(_waterController.text) ?? 0;
+    int cash = int.tryParse(_cashController.text) ?? 0;
+
+    if (coffee == 0 && milk == 0 && water == 0 && cash == 0) {
+      _notifications.showError('Введите значения для добавления');
+      return;
+    }
+
     setState(() {
-      _appState.resources.coffeeBeans +=
-          int.tryParse(_coffeeController.text) ?? 0;
-      _appState.resources.milk += int.tryParse(_milkController.text) ?? 0;
-      _appState.resources.water += int.tryParse(_waterController.text) ?? 0;
-      _appState.resources.cash += int.tryParse(_cashController.text) ?? 0;
+      if (coffee > 0) _appState.resources.coffeeBeans += coffee;
+      if (milk > 0) _appState.resources.milk += milk;
+      if (water > 0) _appState.resources.water += water;
+      if (cash > 0) _appState.resources.cash += cash;
     });
 
     _coffeeController.clear();
@@ -38,9 +53,7 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
 
     FocusManager.instance.primaryFocus?.unfocus();
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Ресурсы добавлены')));
+    _notifications.showSuccess('Ресурсы добавлены');
   }
 
   void _clearInputs() {
@@ -49,10 +62,13 @@ class _ResourcesScreenState extends State<ResourcesScreen> {
     _waterController.clear();
     _cashController.clear();
     FocusManager.instance.primaryFocus?.unfocus();
+    _notifications.showInfo('Поля очищены');
   }
 
   @override
   Widget build(BuildContext context) {
+    _notifications.setContext(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(

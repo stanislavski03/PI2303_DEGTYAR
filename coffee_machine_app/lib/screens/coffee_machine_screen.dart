@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../app_state.dart';
 import '../models/Enums.dart';
 import '../models/ICoffee.dart';
+import '../services/NotificationService.dart';
 
 class CoffeeMachineScreen extends StatefulWidget {
   const CoffeeMachineScreen({super.key});
@@ -12,6 +13,7 @@ class CoffeeMachineScreen extends StatefulWidget {
 
 class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
   late AppState _appState;
+  late NotificationService _notifications;
   int selectedCoffee =
       0; // 0 - эспрессо, 1 - американо, 2 - капучино, 3 - латте
   bool isMakingCoffee = false;
@@ -22,6 +24,10 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
   void initState() {
     super.initState();
     _appState = AppState();
+    _notifications = NotificationService();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifications.setContext(context);
+    });
   }
 
   CoffeeType _getCoffeeTypeFromIndex(int index) {
@@ -70,30 +76,7 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
 
     CoffeeType type = _getCoffeeTypeFromIndex(selectedCoffee);
 
-    ICoffee? coffee = _appState.controller.createCoffee(type);
-    if (coffee != null && _appState.resources.cash < coffee.cash()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Недостаточно денег! Нужно ${coffee.cash()} руб'),
-        ),
-      );
-      setState(() {
-        isMakingCoffee = false;
-      });
-      return;
-    }
-
-    bool success = await _appState.controller.makeCoffee(type, (message) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(message)));
-    });
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${_getCoffeeName(selectedCoffee)} готов!')),
-      );
-    }
+    bool success = await _appState.controller.makeCoffee(type);
 
     setState(() {
       isMakingCoffee = false;
@@ -102,6 +85,8 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
 
   @override
   Widget build(BuildContext context) {
+    _notifications.setContext(context);
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       body: SafeArea(
@@ -187,12 +172,21 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
                         ElevatedButton(
                           onPressed: () {
                             if (_moneyController.text.isNotEmpty) {
-                              setState(() {
-                                int amount =
-                                    int.tryParse(_moneyController.text) ?? 0;
-                                _appState.resources.cash += amount;
-                              });
-                              _moneyController.clear();
+                              int amount =
+                                  int.tryParse(_moneyController.text) ?? 0;
+                              if (amount > 0) {
+                                setState(() {
+                                  _appState.resources.cash += amount;
+                                });
+                                _notifications.showSuccess(
+                                  '$amount руб добавлено',
+                                );
+                                _moneyController.clear();
+                              } else {
+                                _notifications.showError(
+                                  'Введите корректную сумму',
+                                );
+                              }
                               FocusManager.instance.primaryFocus?.unfocus();
                             }
                           },
@@ -205,9 +199,12 @@ class _CoffeeMachineScreenState extends State<CoffeeMachineScreen> {
                         const SizedBox(width: 4),
                         ElevatedButton(
                           onPressed: () {
-                            setState(() {
-                              _appState.resources.cash = 0;
-                            });
+                            if (_appState.resources.cash > 0) {
+                              setState(() {
+                                _appState.resources.cash = 0;
+                              });
+                              _notifications.showInfo('Деньги возвращены');
+                            }
                             FocusManager.instance.primaryFocus?.unfocus();
                           },
                           style: ElevatedButton.styleFrom(
