@@ -41,6 +41,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void _showMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -123,9 +129,21 @@ class _MyHomePageState extends State<MyHomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildActionButton(Icons.phone, 'ПОЗВОНИТЬ'),
-                  _buildActionButton(Icons.navigation, 'МАРШРУТ'),
-                  _buildActionButton(Icons.share, 'ПОДЕЛИТЬСЯ'),
+                  _buildActionButton(
+                    Icons.phone,
+                    'ПОЗВОНИТЬ',
+                    () => _showMessage('Звонок в общежитие...'),
+                  ),
+                  _buildActionButton(
+                    Icons.navigation,
+                    'МАРШРУТ',
+                    () => _showMessage('Построение маршрута...'),
+                  ),
+                  _buildActionButton(
+                    Icons.share,
+                    'ПОЖЕЛИТЬСЯ',
+                    () => _showMessage('Поделиться...'),
+                  ),
                 ],
               ),
             ),
@@ -154,20 +172,23 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildActionButton(IconData icon, String label) {
-    return Column(
-      children: [
-        Icon(icon, color: Colors.green, size: 30),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.green,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
+  Widget _buildActionButton(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.green, size: 30),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.green,
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
