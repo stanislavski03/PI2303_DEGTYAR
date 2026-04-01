@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'simple_list.dart';
+import 'infinity_list.dart';
 
 void main() {
   runApp(const MyApp());
@@ -49,7 +50,12 @@ class MainMenu extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InfinityList()),
+                );
+              },
               child: const Text('Бесконечный список со строками'),
             ),
             const SizedBox(height: 20),
