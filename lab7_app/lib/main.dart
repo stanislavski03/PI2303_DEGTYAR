@@ -22,6 +22,15 @@ class MyApp extends StatelessWidget {
 class FirstScreen extends StatelessWidget {
   const FirstScreen({super.key});
 
+  void _showResult(BuildContext context, String choice) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(choice, style: const TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -35,11 +44,14 @@ class FirstScreen extends StatelessWidget {
       ),
       body: Center(
         child: ElevatedButton(
-          onPressed: () {
-            Navigator.push(
+          onPressed: () async {
+            final result = await Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SecondScreen()),
             );
+            if (result != null) {
+              _showResult(context, result);
+            }
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
@@ -78,7 +90,7 @@ class SecondScreen extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context, 'Да!');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
@@ -89,7 +101,7 @@ class SecondScreen extends StatelessWidget {
             const SizedBox(width: 20),
             ElevatedButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context, 'Нет');
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
