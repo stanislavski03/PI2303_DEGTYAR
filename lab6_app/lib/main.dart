@@ -35,12 +35,24 @@ class _CalculatorPageState extends State<CalculatorPage> {
 
   void _validateAndCalculate() {
     if (_formKey.currentState!.validate()) {
+      double width = double.parse(_widthController.text);
+      double height = double.parse(_heightController.text);
+      double area = width * height;
+
+      setState(() {
+        _resultText = 'S = $width × $height = ${area.toStringAsFixed(2)} мм²';
+      });
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Форма успешно заполнена'),
           backgroundColor: Colors.green,
         ),
       );
+    } else {
+      setState(() {
+        _resultText = 'Задайте параметры';
+      });
     }
   }
 
