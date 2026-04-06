@@ -33,11 +33,11 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       if (_isLiked) {
         _likesCount--;
-        _isLiked = false;
       } else {
         _likesCount++;
-        _isLiked = true;
       }
+
+      _isLiked = !_isLiked;
     });
   }
 
