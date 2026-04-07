@@ -18,34 +18,31 @@ class MyApp extends StatelessWidget {
 }
 
 class Photo {
-  final int albumId;
-  final int id;
-  final String title;
+  final String id;
   final String url;
-  final String thumbnailUrl;
+  final int width;
+  final int height;
 
   const Photo({
-    required this.albumId,
     required this.id,
-    required this.title,
     required this.url,
-    required this.thumbnailUrl,
+    required this.width,
+    required this.height,
   });
 
   factory Photo.fromJson(Map<String, dynamic> json) {
     return Photo(
-      albumId: json['albumId'] as int,
-      id: json['id'] as int,
-      title: json['title'] as String,
+      id: json['id'] as String,
       url: json['url'] as String,
-      thumbnailUrl: json['thumbnailUrl'] as String,
+      width: json['width'] as int,
+      height: json['height'] as int,
     );
   }
 }
 
 Future<List<Photo>> fetchPhotos(http.Client client) async {
   final response = await client.get(
-    Uri.parse('https://jsonplaceholder.typicode.com/photos'),
+    Uri.parse('https://api.thecatapi.com/v1/images/search?limit=50&size=small'),
   );
   return compute(parsePhotos, response.body);
 }
@@ -70,7 +67,7 @@ class MyHomePage extends StatelessWidget {
         future: fetchPhotos(http.Client()),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return const Center(child: Text('Ошибка запроса!'));
+            return Center(child: Text('Ошибка запроса: ${snapshot.error}'));
           } else if (snapshot.hasData) {
             return PhotosList(photos: snapshot.data!);
           } else {
@@ -89,12 +86,27 @@ class PhotosList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
+      padding: const EdgeInsets.all(4),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 4,
       ),
       itemCount: photos.length,
       itemBuilder: (context, index) {
-        return Image.network(photos[index].thumbnailUrl, fit: BoxFit.cover);
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.network(
+            photos[index].url,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                color: Colors.grey[300],
+                child: const Icon(Icons.broken_image, size: 50),
+              );
+            },
+          ),
+        );
       },
     );
   }
